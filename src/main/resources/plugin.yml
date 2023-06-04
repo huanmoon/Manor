@@ -1,0 +1,19 @@
+name: Manor
+version: '${project.version}'
+main: net.huanmoon007.manor.Manor
+api-version: 1.19
+authors: [ huanmoon007 ]
+description: Create a manor that others can't break blocks in it
+commands:
+  manorcreate:
+    description: Create your manor
+    usage: /manorcreate <TheLowerY> <TheHighestY> <ManorName>
+  manordel:
+    description: Delete your manor
+    usage: /manordel <ManorName>
+  manordelconfirm:
+    description: Confirm to delete your manor
+    usage: /manordelconfirm
+  manordelcancel:
+    description: Cancel to delete your manor
+    usage: /manordelcancel
