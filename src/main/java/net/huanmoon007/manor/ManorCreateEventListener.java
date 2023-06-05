@@ -47,7 +47,12 @@ public class ManorCreateEventListener implements Listener {
                 FirstPointZ = SecondPointZ;
                 SecondPointZ = swap;
             }
-            try (FileWriter fileWriter = new FileWriter("plugins\\Manor\\users\\"+uuid+".yml",true)){
+            MiscManager fileWriter = new MiscManager();
+            fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",3,"last-first-point-x: "+FirstPointX);
+            fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",4,"last-first-point-z: "+FirstPointZ);
+            fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",5,"last-second-point-x: "+SecondPointX);
+            fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",6,"last-second-point-z: "+SecondPointZ);
+            /*try (FileWriter fileWriter = new FileWriter("plugins\\Manor\\users\\"+uuid+".yml",true)){
                 fileWriter.append("last-first-point-x: "+FirstPointX+"\r\n"
                         +"last-first-point-z: "+FirstPointZ+"\r\n"
                         +"last-second-point-x: "+SecondPointX+"\r\n"
@@ -56,8 +61,7 @@ public class ManorCreateEventListener implements Listener {
             }
             catch (IOException exception){
 
-            }
-
+            }*/
         }
         //event.getPlayer().sendMessage(FirstPointX+" "+FirstPointZ +" "+SecondPointX+" "+SecondPointZ);
     }

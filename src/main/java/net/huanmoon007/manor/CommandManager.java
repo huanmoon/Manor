@@ -10,17 +10,14 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 public class CommandManager implements CommandExecutor {
-    private static boolean IsDelCanceled = true;
-    private static String DelManorName;
-
     @Override
     public boolean onCommand (CommandSender sender, Command cmd, String label, String[] args){
+        boolean IsDelCancelled;
+        String DelManorName;
         if (cmd.getName().equalsIgnoreCase("manorcreate")){
             UUID uuid = Bukkit.getPlayerExact(sender.getName()).getUniqueId();
             File file = new File("plugins\\Manor\\users\\"+uuid+".yml");
@@ -29,16 +26,21 @@ public class CommandManager implements CommandExecutor {
             double FirstPointZ = new Double(config.getString("last-first-point-z"));
             double SecondPointX = new Double(config.getString("last-second-point-x"));
             double SecondPointZ = new Double(config.getString("last-second-point-z"));
+            if (Math.abs(SecondPointX-FirstPointX) <= 16 || Math.abs(FirstPointZ-SecondPointZ) <= 16){
+                sender.sendMessage(ChatColor.AQUA+"Manor's width and height must > 16");
+
+                return false;
+            }
             /*
             FirstPointX = (int)Math.floor(FirstPointX);
             FirstPointZ = (int)Math.floor(FirstPointZ);
             SecondPointX = (int)Math.floor(SecondPointX);
             SecondPointZ = (int)Math.floor(SecondPointZ);
             */
-            int FirstChunkX = (int)Math.floor(FirstPointX) / 16;
-            int FirstChunkZ = (int)Math.floor(FirstPointZ) / 16;
-            int SecondChunkX = (int)Math.floor(SecondPointX) / 16;
-            int SecondChunkZ = (int)Math.floor(SecondPointZ) / 16;
+            int FirstChunkX = (int)Math.floor(FirstPointX)/16;
+            int FirstChunkZ = (int)Math.floor(FirstPointZ)/16;
+            int SecondChunkX = (int)Math.floor(SecondPointX)/16;
+            int SecondChunkZ = (int)Math.floor(SecondPointZ)/16;
             File ManorDir = new File("plugins\\Manor\\manors");
             File ManorFile = new File("plugins\\Manor\\manors\\"+args[2]+".yml");
             //File UserFile = new File("Manor\\manors\\"+uuid+".yml");
@@ -46,7 +48,7 @@ public class CommandManager implements CommandExecutor {
             if (ManorFile.exists()){
                 sender.sendMessage(ChatColor.AQUA+"There is already a manor named that.");
             }
-            else{
+            else {
                 try (FileWriter fileWriter = new FileWriter("plugins\\Manor\\manors\\"+args[2]+".yml")){
                     ManorFile.createNewFile();
                    //sender.sendMessage("Your manor "+args[2]+" create successfully!");
@@ -62,8 +64,10 @@ public class CommandManager implements CommandExecutor {
                             +"the-lower-y: "+args[0]+"\r\n"
                             +"the-highest-y: "+args[1]+"\r\n"
                             +"owner: "+uuid+"\r\n"
-                            +"owner-last-name: "+sender.getName()+"\r\n");
+                            +"\r\n");
                     fileWriter.flush();
+                    MiscManager fileWriter2 = new MiscManager();
+                    fileWriter2.ModifyFileLine("plugins\\Manor\\manors\\"+args[2]+".yml",13,"owner-last-account-name: "+sender.getName());
                     File ChunkDir = new File("plugins\\Manor\\chunks");
                     ChunkDir.mkdir();
                     System.out.println("FCX:"+FirstChunkX);
@@ -75,9 +79,9 @@ public class CommandManager implements CommandExecutor {
                             System.out.println("j:"+j);
                             File ChunkFile = new File("plugins\\Manor\\chunks\\"+i+"_"+j+".yml");
                             ChunkFile.createNewFile();
-                            FileWriter fileWriter2 = new FileWriter("plugins\\Manor\\chunks\\"+i+"_"+j+".yml");
-                            fileWriter2.append("manor: "+args[2]);
-                            fileWriter2.flush();
+                            FileWriter fileWriter3 = new FileWriter("plugins\\Manor\\chunks\\"+i+"_"+j+".yml");
+                            fileWriter3.append("manor: "+args[2]);
+                            fileWriter3.flush();
                         }
                     }
                     sender.sendMessage(ChatColor.AQUA+args[2]+" create successfully!");
@@ -97,7 +101,6 @@ public class CommandManager implements CommandExecutor {
 
         else if (cmd.getName().equalsIgnoreCase("manordel")){
             UUID uuid = Objects.requireNonNull(Bukkit.getPlayerExact(sender.getName())).getUniqueId();
-
             sender.sendMessage(uuid);
             System.out.println(uuid);
             File file = new File("plugins\\Manor\\manors\\"+args[0]+".yml");
@@ -108,29 +111,56 @@ public class CommandManager implements CommandExecutor {
             if (uuid.equals(uuid2)){
                 sender.sendMessage(ChatColor.AQUA+"use /manordelconfirm to confirm that!Or use /manordelcancel to cancel that!");
                 DelManorName = args[0];
-                IsDelCanceled = false;
-                System.out.println(IsDelCanceled);
+                IsDelCancelled = false;
+                System.out.println(IsDelCancelled);
+                MiscManager fileWriter = new MiscManager();
+                fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",7,"is-del-cancelled: "+ IsDelCancelled);
+                fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",8,"del-manor-name: "+args[0]);
             }
-            else{
+            else {
                 sender.sendMessage(ChatColor.AQUA+"You are not the owner of this manor!");
             }
             return true;
         }
 
-        else if (cmd.getName().equalsIgnoreCase("manordelconfirm") && !IsDelCanceled){
-            System.out.println(IsDelCanceled);
+        else if (cmd.getName().equalsIgnoreCase("manordelconfirm")){
+            UUID uuid = Objects.requireNonNull(Bukkit.getPlayerExact(sender.getName())).getUniqueId();
+            File UserFile = new File("plugins\\Manor\\users\\"+uuid+".yml");
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(UserFile);
+            IsDelCancelled = config.getBoolean("is-del-cancelled");
+            System.out.println(IsDelCancelled);
             sender.sendMessage("test0");
-            File file = new File("plugins\\Manor\\manors\\"+DelManorName+".yml");
-            file.delete();
-            sender.sendMessage(ChatColor.AQUA+"Manor delete successfully.");
+            if (!IsDelCancelled){
+                DelManorName = config.getString("del-manor-name");
+                File file = new File("plugins\\Manor\\manors\\"+ DelManorName +".yml");
+                file.delete();
+                MiscManager fileWriter = new MiscManager();
+                IsDelCancelled = true;
+                fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",7,"is-del-cancelled: "+ IsDelCancelled);
+                sender.sendMessage(ChatColor.AQUA+"Manor delete successfully.");
 
-            return true;
+                return true;
+            }
+            else {
+                return false;
+            }
         }
 
-        else if (cmd.getName().equalsIgnoreCase("manordelcancel") && !IsDelCanceled){
-            IsDelCanceled = true;
-            sender.sendMessage(ChatColor.AQUA+"Delete request canceled successfully.");
-            return true;
+        else if (cmd.getName().equalsIgnoreCase("manordelcancel")){
+            UUID uuid = Objects.requireNonNull(Bukkit.getPlayerExact(sender.getName())).getUniqueId();
+            File UserFile = new File("plugins\\Manor\\users\\"+uuid+".yml");
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(UserFile);
+            IsDelCancelled = config.getBoolean("is-del-cancelled");
+            if (!IsDelCancelled){
+                MiscManager fileWriter = new MiscManager();
+                IsDelCancelled = true;
+                fileWriter.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",7,"is-del-cancelled: "+ IsDelCancelled);
+                sender.sendMessage(ChatColor.AQUA+"Delete request cancelled successfully.");
+                return true;
+            }
+            else {
+                return false;
+            }
         }
 
         return false;

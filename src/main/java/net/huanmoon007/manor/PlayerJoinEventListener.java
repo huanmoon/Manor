@@ -7,7 +7,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.UUID;
 
 public class PlayerJoinEventListener implements Listener {
@@ -21,7 +20,18 @@ public class PlayerJoinEventListener implements Listener {
         try (FileWriter fileWriter = new FileWriter("plugins\\Manor\\users\\"+uuid+".yml")){
             UserFile.createNewFile();
             fileWriter.append("uuid: "+uuid+"\r\n"
-                    +"last-account-name: "+event.getPlayer().getName()+"\r\n");
+                    +"\r\n"
+                    +"\r\n"
+                    +"\r\n"
+                    +"\r\n"
+                    +"\r\n"
+                    +"\r\n"
+                    +"\r\n"
+                    +"\r\n"
+                    +"\r\n");
+            MiscManager fileWriter2 = new MiscManager();
+            fileWriter2.ModifyFileLine("plugins\\Manor\\users\\"+uuid+".yml",2,"last-account-name: "+event.getPlayer().getName());
+            fileWriter.flush();
         }
         catch (Exception exception){
             event.getPlayer().sendMessage("UserFile create failed!Report to huanmoon007.");

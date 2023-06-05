@@ -48,7 +48,7 @@ public class ManorEventListener implements Listener {
                     block.setType(material);
                     System.out.println(material);
                     */
-                     event.setCancelled(true);
+                    event.setCancelled(true);
                     event.getPlayer().sendMessage(ChatColor.AQUA+"You are not the owner of this manor!");
                 }
                 break;
